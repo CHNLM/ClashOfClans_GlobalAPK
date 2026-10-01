@@ -1,0 +1,25 @@
+{
+  "googlePlay": {
+    "country": "us"
+  },
+  "apkpure": {
+    "apiBaseUrl": "https://tapi.pureapk.com",
+    "versionsPath": "/v3/get_app_his_version",
+    "abis": ["arm64-v8a", "armeabi-v7a", "armeabi", "x86", "x86_64"],
+    "language": "en-US",
+    "osVer": "35"
+  },
+  "apkmirror": {
+    "listUrl": "https://www.apkmirror.com/apk/supercell/clash-of-clans/"
+  },
+  "uptodown": {
+    "baseUrl": "https://clash-of-clans.en.uptodown.com",
+    "versionsUrlCandidates": [
+      "https://clash-of-clans.en.uptodown.com/android/versions",
+      "https://clash-of-clans.en.uptodown.com/android/download",
+      "https://clash-of-clans.en.uptodown.com/android",
+      "https://com.supercell.clashofclans.en.uptodown.com/android/versions",
+      "https://com.supercell.clashofclans.en.uptodown.com/android"
+    ]
+  }
+}

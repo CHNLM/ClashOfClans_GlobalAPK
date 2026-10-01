@@ -1,0 +1,14 @@
+{
+  "packageName": "com.supercell.clashofclans",
+  "appName": "Clash of Clans",
+  "platform": "android",
+  "region": "international",
+  "currentVersion": "18.600.7",
+  "currentVersionCode": "180600006",
+  "apkAssetName": "Clash_of_Clans_international",
+  "systemRequirement": "Android 7.0+",
+  "expectedMinSizeMb": 300,
+  "expectedMaxSizeMb": 1400,
+  "lastReleasedAt": "2026-10-01T01:36:31.756Z",
+  "lastCheckedAt": ""
+}
