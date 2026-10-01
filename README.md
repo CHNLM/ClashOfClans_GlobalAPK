@@ -10,12 +10,12 @@
 
 直接点击下方链接下载（固定链接，永远指向最新版本）：
 
-[⬇️ 下载 Clash of Clans 国际服安装包](https://github.com/CHNLM/ClashOfClans_GlobalAPK/releases/latest/download/Clash_of_Clans_international.apk)
+[⬇️ 下载 Clash of Clans 国际服安装包](https://github.com/CHNLM/ClashOfClans_GlobalAPK/releases/latest/download/Clash_of_Clans_international.xapk)
 
 - 版本号请以右侧徽章为准：![GitHub release (latest by date)](https://img.shields.io/github/v/release/CHNLM/ClashOfClans_GlobalAPK)
 - 系统要求：Android 7.0+
-- 安装包为官方签名原版，来自第三方镜像站（APKMirror 等），SHA-256 已在发布时校验。
-- 若发布为 **XAPK 格式**（APKPure 兜底源），下载后需使用 [XAPK 安装器](https://apkpure.com/xapk-installer/com.apkpure.aegon) 安装。
+- 安装包为官方签名原版，来自第三方镜像站（APKPure 等），SHA-256 已在发布时校验。
+- **当前发布为 XAPK 格式**（APKPure 封装，含游戏资源包），下载后请使用 [XAPK 安装器](https://apkpure.com/xapk-installer/com.apkpure.aegon) 安装；若发行源恢复纯 APK，asset 将自动切换为 `.apk` 并同步更新本链接。
 
 ### 手动触发一次检测与发布
 

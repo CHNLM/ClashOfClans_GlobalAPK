@@ -28,9 +28,9 @@ function parseArgs(argv) {
   return args;
 }
 
-/** 根据下载 URL 推断安装包格式（.xapk 为 APKPure 封装格式） */
+/** 根据下载 URL 推断安装包格式（XAPK 为 APKPure 封装格式，URL 常为 /XAPK/<base64> 形式） */
 function detectExtension(url) {
-  return /\.xapk($|\?)/i.test(url) ? ".xapk" : ".apk";
+  return /\.xapk($|\?)/i.test(url) || /\/xapk\//i.test(url) ? ".xapk" : ".apk";
 }
 
 /** 写 GitHub Actions step output */
