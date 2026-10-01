@@ -1,0 +1,90 @@
+# 每周检测并自动发布国际服安装包（支持手动一键）
+name: Weekly APK Check & Release
+
+on:
+  schedule:
+    # 每周一 03:30 UTC（= 北京时间 11:30）
+    - cron: "30 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "强制发布指定版本（如 18.600.7）。留空则自动检测最新版本"
+        required: false
+        type: string
+      force:
+        description: "忽略版本比对，强制重新发布检测到的当前版本"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coc-release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: 检测最新版本
+    runs-on: ubuntu-latest
+    outputs:
+      hasUpdate: ${{ steps.check.outputs.hasUpdate }}
+      checkError: ${{ steps.check.outputs.checkError }}
+      latestVersion: ${{ steps.check.outputs.latestVersion }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 安装依赖
+        run: npm ci
+      - name: 检测最新版本（官方源优先，多源冗余）
+        id: check
+        run: node scripts/check-version.js --github-output
+      - name: 检测异常告警
+        if: steps.check.outputs.checkError == 'true'
+        run: echo "::error::全部版本源均失败，本次跳过发布，请人工排查。"
+        continue-on-error: true
+
+  release:
+    name: 下载校验并发布
+    needs: check
+    runs-on: ubuntu-latest
+    if: >
+      needs.check.outputs.hasUpdate == 'true' ||
+      inputs.force == true ||
+      inputs.version != ''
+    env:
+      RELEASE_VERSION: ${{ inputs.version || needs.check.outputs.latestVersion }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 下载 APK 并校验（体积 + 哈希）
+        run: |
+          node scripts/download-verify.js \
+            --version="$RELEASE_VERSION" \
+            --output="downloads/Clash_of_Clans.apk"
+
+      - name: 发布 Release（asset 固定文件名）
+        run: |
+          node scripts/publish.js \
+            --version="$RELEASE_VERSION" \
+            --apk="downloads/Clash_of_Clans.apk" \
+            --notes="Clash of Clans 国际服安装包 v$RELEASE_VERSION（GitHub Actions 自动发布）"
+
+      - name: 清理旧版本（只保留最新）
+        run: node scripts/cleanup.js
+
+      - name: 提交配置更新（版本号 / 发布时间）
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add config/apk.json
+          git diff --cached --quiet || git commit -m "release: v$RELEASE_VERSION 自动发布"
+          git push
