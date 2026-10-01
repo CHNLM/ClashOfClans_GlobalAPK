@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
 import { statSync } from "node:fs";
 import path from "node:path";
 import { readConfig } from "./lib/config.js";
-import { info, success, error as logError } from "./lib/logger.js";
+import { info, success, warn, error as logError } from "./lib/logger.js";
 import { toTag } from "./lib/version.js";
 
 function parseArgs(argv) {
@@ -69,6 +69,20 @@ async function main() {
 
   const repo = getRepo();
   info(`仓库：${repo}`);
+
+  // 幂等：若同名 tag 的 Release 已存在（如 force 重发），先删除旧 Release 与 tag 再创建
+  try {
+    runGh(["release", "view", tag, "--repo", repo, "--json", "tagName", "--jq", ".tagName"]);
+    info(`检测到同名 Release（${tag}），先删除旧的`);
+    runGh(["release", "delete", tag, "--yes", "--repo", repo]);
+    try {
+      runGh(["api", "-X", "DELETE", `repos/{owner}/{repo}/git/refs/tags/${tag}`]);
+    } catch {
+      warn("旧 tag 删除失败（可能已被移除），继续");
+    }
+  } catch {
+    info(`无同名 Release，直接创建`);
+  }
 
   // asset 用固定基础名 + 实际格式扩展名（Clash_of_Clans_international.apk / .xapk），
   // 使 releases/latest/download/<assetName> 永久指向最新版本。
