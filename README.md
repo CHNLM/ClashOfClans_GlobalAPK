@@ -15,6 +15,7 @@
 - 版本号请以右侧徽章为准：![GitHub release (latest by date)](https://img.shields.io/github/v/release/CHNLM/ClashOfClans_GlobalAPK)
 - 系统要求：Android 7.0+
 - 安装包为官方签名原版，来自第三方镜像站（APKMirror 等），SHA-256 已在发布时校验。
+- 若发布为 **XAPK 格式**（APKPure 兜底源），下载后需使用 [XAPK 安装器](https://apkpure.com/xapk-installer/com.apkpure.aegon) 安装。
 
 ### 手动触发一次检测与发布
 

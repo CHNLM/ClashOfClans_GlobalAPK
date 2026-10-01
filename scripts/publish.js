@@ -9,6 +9,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { statSync } from "node:fs";
+import path from "node:path";
 import { readConfig } from "./lib/config.js";
 import { info, success, error as logError } from "./lib/logger.js";
 import { toTag } from "./lib/version.js";
@@ -69,14 +70,16 @@ async function main() {
   const repo = getRepo();
   info(`仓库：${repo}`);
 
-  // asset 用固定文件名（Clash_of_Clans_international.apk），
+  // asset 用固定基础名 + 实际格式扩展名（Clash_of_Clans_international.apk / .xapk），
   // 使 releases/latest/download/<assetName> 永久指向最新版本。
+  const ext = path.extname(args.apk) || ".apk";
+  const assetName = config.apkAssetName + ext;
   const notes = args.notes || `Clash of Clans 国际服安装包 v${version}（自动发布）`;
   const releaseArgs = [
     "release",
     "create",
     tag,
-    `${args.apk}#${config.apkAssetName}`,
+    `${args.apk}#${assetName}`,
     "--repo",
     repo,
     "--title",

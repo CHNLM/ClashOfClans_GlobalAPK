@@ -57,6 +57,7 @@ jobs:
       inputs.version != ''
     env:
       RELEASE_VERSION: ${{ inputs.version || needs.check.outputs.latestVersion }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -66,16 +67,18 @@ jobs:
         run: npm ci
 
       - name: 下载 APK 并校验（体积 + 哈希）
+        id: download
         run: |
           node scripts/download-verify.js \
             --version="$RELEASE_VERSION" \
-            --output="downloads/Clash_of_Clans.apk"
+            --output="downloads/Clash_of_Clans" \
+            --github-output
 
-      - name: 发布 Release（asset 固定文件名）
+      - name: 发布 Release（asset 固定基础名 + 实际格式）
         run: |
           node scripts/publish.js \
             --version="$RELEASE_VERSION" \
-            --apk="downloads/Clash_of_Clans.apk" \
+            --apk="${{ steps.download.outputs.file }}" \
             --notes="Clash of Clans 国际服安装包 v$RELEASE_VERSION（GitHub Actions 自动发布）"
 
       - name: 清理旧版本（只保留最新）

@@ -2,7 +2,9 @@
  * 源注册表：统一编排各 fetcher 的优先级
  *
  * 版本检测：官方源（Google Play）优先，失败后按序轮询冗余源。
- * 下载解析：APKMirror（首选）优先，APKPure API（最稳定）第二，其余按序兜底。
+ * 下载解析：APKMirror（首选）优先；实测其在 CI 常被 Cloudflare 拦截(403)，
+ *           故 captain-droid（纯 APK）紧随其后，APKPure API（XAPK 封装）兜底。
+ * 注意：captain-droid/APKMirror 提供纯 APK，APKPure 提供 XAPK 封装格式。
  */
 import * as googlePlay from "./google-play.js";
 import * as apkpure from "./apkpure.js";
@@ -21,13 +23,13 @@ export const VERSION_SOURCES = [
   { name: "captain-droid", label: "Captain Droid", fetchLatest: () => captainDroid.fetchLatestInfo() },
 ];
 
-/** 下载解析源（APKMirror 首选） */
+/** 下载解析源（纯 APK 优先，APKMirror 首选） */
 export const DOWNLOAD_SOURCES = [
   { name: "apkmirror", label: "APKMirror", resolve: (opts) => apkmirror.resolveDownload(opts) },
+  { name: "captain-droid", label: "Captain Droid", resolve: (opts) => captainDroid.resolveDownload(opts) },
   { name: "apkpure", label: "APKPure API", resolve: (opts) => apkpure.resolveDownload(opts) },
   { name: "aptoide", label: "Aptoide", resolve: (opts) => aptoide.resolveDownload(opts) },
   { name: "uptodown", label: "Uptodown", resolve: (opts) => uptodown.resolveDownload(opts) },
-  { name: "captain-droid", label: "Captain Droid", resolve: (opts) => captainDroid.resolveDownload(opts) },
 ];
 
 /** 按名称取源 */

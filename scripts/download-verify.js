@@ -10,7 +10,7 @@
  * 校验规则：体积在 config 范围内；若源提供 SHA-1/SHA-256 则必须匹配，否则拒绝。
  */
 import { createHash } from "node:crypto";
-import { createReadStream, statSync, rmSync, mkdirSync } from "node:fs";
+import { createReadStream, statSync, rmSync, mkdirSync, appendFileSync } from "node:fs";
 import path from "node:path";
 import { readConfig } from "./lib/config.js";
 import { info, success, warn, error as logError, setupGlobalErrorHandlers } from "./lib/logger.js";
@@ -18,13 +18,29 @@ import { DOWNLOAD_SOURCES, getDownloadSource } from "./lib/fetchers/index.js";
 import { downloadToFile, buildBrowserHeaders } from "./lib/http.js";
 
 function parseArgs(argv) {
-  const args = { version: null, output: null, source: null };
+  const args = { version: null, output: null, source: null, githubOutput: false };
   for (const arg of argv) {
     if (arg.startsWith("--version=")) args.version = arg.slice("--version=".length);
     else if (arg.startsWith("--output=")) args.output = arg.slice("--output=".length);
     else if (arg.startsWith("--source=")) args.source = arg.slice("--source=".length);
+    else if (arg === "--github-output") args.githubOutput = true;
   }
   return args;
+}
+
+/** 根据下载 URL 推断安装包格式（.xapk 为 APKPure 封装格式） */
+function detectExtension(url) {
+  return /\.xapk($|\?)/i.test(url) ? ".xapk" : ".apk";
+}
+
+/** 写 GitHub Actions step output */
+function writeGithubOutput(values) {
+  const outPath = process.env.GITHUB_OUTPUT;
+  if (!outPath) return;
+  const lines = Object.entries(values)
+    .map(([k, v]) => `${k}=${v}`)
+    .join("\n");
+  appendFileSync(outPath, lines + "\n", "utf-8");
 }
 
 /** 计算文件哈希 */
@@ -109,7 +125,8 @@ async function main() {
   info(`开始下载：${resolved.url}`);
 
   const outDir = args.output ? path.dirname(path.resolve(args.output)) : path.resolve("downloads");
-  const outFile = args.output ? path.resolve(args.output) : path.join(outDir, `Clash_of_Clans_${version}.apk`);
+  const outBase = args.output ? path.resolve(args.output) : path.join(outDir, `Clash_of_Clans_${version}`);
+  const outFile = outBase + detectExtension(resolved.url);
   mkdirSync(outDir, { recursive: true });
   rmSync(outFile, { force: true });
 
@@ -122,6 +139,9 @@ async function main() {
 
   const sha256 = await hashFile(outFile, "sha256");
   success(`下载并校验完成：${outFile}`);
+  if (args.githubOutput) {
+    writeGithubOutput({ file: outFile, version, sha256, format: detectExtension(resolved.url).slice(1) });
+  }
   console.log(JSON.stringify({ ok: true, version, file: outFile, size: statSync(outFile).size, sha256, source: resolved.source }, null, 2));
 }
 
