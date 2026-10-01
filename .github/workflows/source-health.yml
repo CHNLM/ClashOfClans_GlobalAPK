@@ -1,0 +1,32 @@
+# 每月巡检全部版本源的可用性，提前发现失效源
+name: Source Health Check
+
+on:
+  schedule:
+    # 每月 1 日 04:00 UTC
+    - cron: "0 4 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    name: 巡检全部版本源
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: 安装依赖
+        run: npm ci
+      - name: 采集全部源的健康状态
+        run: node scripts/check-version.js --all
+      - name: 汇总报告
+        run: |
+          echo "## 源健康巡检结果" >> $GITHUB_STEP_SUMMARY
+          node scripts/check-version.js --all > /tmp/health.json
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/health.json >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

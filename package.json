@@ -1,0 +1,21 @@
+{
+  "name": "clashofclans-global",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Clash of Clans 国际服安装包的自动检测、发布与分发（GitHub Release 只保留最新版本）",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node scripts/check-version.js",
+    "download": "node scripts/download-verify.js",
+    "release": "node scripts/publish.js",
+    "cleanup": "node scripts/cleanup.js",
+    "self-test": "node scripts/self-test.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "google-play-scraper": "^10.1.3"
+  }
+}
