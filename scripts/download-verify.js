@@ -126,7 +126,9 @@ async function main() {
 
   const outDir = args.output ? path.dirname(path.resolve(args.output)) : path.resolve("downloads");
   const outBase = args.output ? path.resolve(args.output) : path.join(outDir, `Clash_of_Clans_${version}`);
-  const outFile = outBase + detectExtension(resolved.url);
+  // 优先使用源返回的 assetType（如 apk/xapk），否则按 URL 推断
+  const ext = resolved.assetType ? "." + String(resolved.assetType).toLowerCase() : detectExtension(resolved.url);
+  const outFile = outBase + ext;
   mkdirSync(outDir, { recursive: true });
   rmSync(outFile, { force: true });
 
@@ -140,7 +142,7 @@ async function main() {
   const sha256 = await hashFile(outFile, "sha256");
   success(`下载并校验完成：${outFile}`);
   if (args.githubOutput) {
-    writeGithubOutput({ file: outFile, version, sha256, format: detectExtension(resolved.url).slice(1) });
+    writeGithubOutput({ file: outFile, version, sha256, format: ext.slice(1) });
   }
   console.log(JSON.stringify({ ok: true, version, file: outFile, size: statSync(outFile).size, sha256, source: resolved.source }, null, 2));
 }

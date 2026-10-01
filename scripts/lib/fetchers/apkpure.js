@@ -77,18 +77,24 @@ export async function fetchLatestInfo(packageName) {
 
 /**
  * 解析指定版本的下载直链
+ * 优先纯 APK 变体（asset.type === 'apk'，完整单包，约 888MB），
+ * 仅当无纯 APK 时才回退 XAPK（分体封装）。
  * @param {object} opts { packageName, version }
- * @returns {Promise<object|null>} { url, sha1, size, source }
+ * @returns {Promise<object|null>} { url, sha1, size, source, assetType }
  */
 export async function resolveDownload({ packageName, version }) {
   const items = await fetchVersionList(packageName);
   const mapped = items.map(mapVersionItem);
-  const target = mapped.find((item) => item.version === version && item.downloadUrl);
-  if (!target) return null;
+  const candidates = mapped.filter((item) => item.version === version && item.downloadUrl);
+  if (candidates.length === 0) return null;
+  const target =
+    candidates.find((item) => item.assetType && item.assetType.toLowerCase() === "apk") ||
+    candidates[0];
   return {
     url: target.downloadUrl,
     sha1: target.sha1 || null,
     size: target.size || null,
     source: "apkpure",
+    assetType: target.assetType || null,
   };
 }
